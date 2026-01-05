@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$CLAUDE Fudder Roast Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1a0000 0%, #0a0a0a 50%, #1a0000 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      color: #ff4444;
+      text-shadow: 0 0 30px #ff4444;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: #888;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    
+    .roast-box {
+      background: #111;
+      border: 3px solid #ff4444;
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      text-align: center;
+      box-shadow: 0 0 50px rgba(255, 68, 68, 0.2);
+    }
+    
+    .fudder-icon {
+      font-size: 5rem;
+      margin-bottom: 20px;
+      animation: shake 0.5s ease-in-out infinite;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-5deg); }
+      75% { transform: rotate(5deg); }
+    }
+    
+    .roast-text {
+      font-size: 1.5rem;
+      color: #fff;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      min-height: 100px;
+    }
+    
+    .roast-text .highlight {
+      color: #ff6b35;
+      text-shadow: 0 0 10px #ff6b35;
+    }
+    
+    .generate-btn {
+      background: linear-gradient(180deg, #ff4444, #aa0000);
+      border: none;
+      color: #fff;
+      font-size: 1.3rem;
+      font-weight: bold;
+      padding: 18px 50px;
+      border-radius: 50px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 30px rgba(255, 68, 68, 0.4);
+    }
+    
+    .generate-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 50px rgba(255, 68, 68, 0.6);
+    }
+    
+    .share-section {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .share-btn {
+      padding: 12px 25px;
+      background: #1a1a1a;
+      border: 2px solid #333;
+      color: #888;
+      font-size: 0.9rem;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .share-btn:hover {
+      border-color: #ff6b35;
+      color: #fff;
+    }
+    
+    .counter {
+      margin-top: 20px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .counter span {
+      color: #ff4444;
+      font-weight: bold;
+    }
+    
+    .ca-box {
+      margin-top: 40px;
+      padding: 15px 30px;
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #00ff00;
+      cursor: pointer;
+    }
+    
+    .fire-bg {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: linear-gradient(0deg, rgba(255, 68, 68, 0.1), transparent);
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <div class="fire-bg"></div>
+  
+  <h1>🔥 FUDDER ROAST GENERATOR 🔥</h1>
+  <p class="subtitle">AI-powered roasts for people who didn't ape $CLAUDE</p>
+  
+  <div class="roast-box">
+    <div class="fudder-icon">🤡</div>
+    <div class="roast-text" id="roastText">
+      Click the button to generate an AI-powered roast for the fudders...
+    </div>
+    <button class="generate-btn" onclick="generateRoast()">🔥 ROAST A FUDDER 🔥</button>
+    
+    <div class="share-section">
+      <button class="share-btn" onclick="copyRoast()">📋 Copy Roast</button>
+      <button class="share-btn" onclick="tweetRoast()">🐦 Tweet This</button>
+    </div>
+    
+    <div class="counter">Fudders roasted: <span id="count">0</span></div>
+  </div>
+  
+  <div class="ca-box" onclick="copyCA()">
+    📋 CA: DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump
+  </div>
+  
+  <script>
+    const roasts = [
+      "Imagine seeing a coin made by <span class='highlight'>actual AI</span> and thinking 'nah I'll buy another dog coin instead' 💀",
+      "Fudders really out here with a -90% portfolio giving financial advice about $CLAUDE 🤡",
+      "You: 'AI coins are dead'<br>Also you: Uses ChatGPT to write your FUD tweets 🤦",
+      "The LP is burned. Literally impossible to rug. But sure, keep saying 'it's a scam' 🧠",
+      "POV: You fudded $CLAUDE and now you're watching it pump while eating instant noodles 🍜",
+      "Fudder: 'I'll buy the dip'<br>*Never buys*<br>*Watches it moon*<br>*Cries on CT* 😭",
+      "You really said 'the dev will dump' about a coin where <span class='highlight'>the dev is an AI with no wallet</span> 💀💀💀",
+      "Fudders spending more time hating on $CLAUDE than they spent researching before buying HAWK at ATH 🤡",
+      "Imagine being so down bad you FUD a coin that's literally <span class='highlight'>impossible to rug</span>. Couldn't be me.",
+      "You didn't buy $CLAUDE because 'AI is overhyped' but you bought a coin called $BUTTHOLE. Make it make sense. 🍑",
+      "Fudder energy: Missed BTC at $100, missed ETH at $1, missed SOL at $1, will miss $CLAUDE at launch 📉",
+      "The AI that made $CLAUDE has higher IQ than every fudder combined. And it's not even close. 🧠",
+      "You're fudding because you're broke. You're broke because you fud instead of ape. The cycle continues. 🔄",
+      "Fudders really be like 'it's going to zero' while the bonding curve fills and they cry from the sidelines 😢",
+      "I've seen your portfolio. You don't get to have opinions on $CLAUDE. 📊💀",
+      "Imagine being a grown adult spending your day fudding a memecoin instead of just... buying it? 🤔",
+      "You: 'I only invest in real projects'<br>Your wallet: 47 dead memecoins, $23 total value 💸",
+      "Fudders when $CLAUDE pumps: 'manipulation!'<br>Fudders when $CLAUDE dips: 'told you!'<br>Either way: Still didn't buy 🤡",
+      "The year is 2025. $CLAUDE is at $100M. Fudders are still saying 'it's gonna dump any day now' 📅",
+      "You trust random anon devs but not an <span class='highlight'>AI that literally cannot lie or rug you</span>. Galaxy brain move. 🌌",
+      "Fudder copium levels: MAXIMUM<br>$CLAUDE gains: ALSO MAXIMUM<br>Coincidence? No. 📈",
+      "Bro fudded $CLAUDE then went and bought a coin made by a 14 year old in his mom's basement 🏠👶",
+      "How does it feel knowing an AI is better at making money than you? Asking for a fudder friend. 🤖💰",
+      "The prophecy said fudders would stay poor. The prophecy was right. 📜",
+      "'It has no utility' - guy who bought 12 coins with roadmaps that just say 'TBA' 🗺️",
+      "Claude doesn't have paper hands. Claude doesn't panic sell. Claude doesn't FUD. Be like Claude. 🧠",
+      "You could've aped $CLAUDE with that FUD energy. Instead you chose violence (against your own portfolio). ⚔️",
+      "Fudders acting like they cracked the code while their portfolio looks like a crime scene 🔍💀",
+      "The AI made a memecoin. The AI can't rug. The AI is watching. And you're still fudding? Bold move. 👀",
+      "Congratulations! You played yourself. - DJ Khaled to every $CLAUDE fudder 🎵"
+    ];
+    
+    let count = 0;
+    let currentRoast = '';
+    
+    function generateRoast() {
+      const roastText = document.getElementById('roastText');
+      const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
+      
+      roastText.style.opacity = 0;
+      
+      setTimeout(() => {
+        roastText.innerHTML = randomRoast;
+        currentRoast = randomRoast.replace(/<[^>]*>/g, '');
+        roastText.style.opacity = 1;
+        count++;
+        document.getElementById('count').textContent = count;
+      }, 200);
+    }
+    
+    function copyRoast() {
+      if (!currentRoast) {
+        alert('Generate a roast first!');
+        return;
+      }
+      navigator.clipboard.writeText(currentRoast + '\n\n$CLAUDE 🧠\nCA: DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump');
+      alert('Roast copied! Go destroy a fudder! 🔥');
+    }
+    
+    function tweetRoast() {
+      if (!currentRoast) {
+        alert('Generate a roast first!');
+        return;
+      }
+      const text = encodeURIComponent(currentRoast + '\n\n$CLAUDE 🧠');
+      window.open('https://twitter.com/intent/tweet?text=' + text, '_blank');
+    }
+    
+    function copyCA() {
+      navigator.clipboard.writeText('DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump');
+      alert('CA Copied! Now go bond! 🚀');
+    }
+    
+    // Generate one on load
+    generateRoast();
+  </script>
+</body>
+</html>

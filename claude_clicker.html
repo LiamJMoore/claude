@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$CLAUDE Clicker — Pump The Chart!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #0a0a0a;
+      min-height: 100vh;
+      color: #fff;
+      overflow-x: hidden;
+    }
+    
+    .game {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      color: #ff6b35;
+      text-shadow: 0 0 30px #ff6b35;
+      margin-bottom: 5px;
+    }
+    
+    .subtitle {
+      color: #888;
+      margin-bottom: 20px;
+    }
+    
+    .stats-bar {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 20px;
+      padding: 15px 30px;
+      background: #111;
+      border-radius: 50px;
+      border: 2px solid #333;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+    }
+    
+    .stat-value.price {
+      color: #ffd700;
+      text-shadow: 0 0 10px #ffd700;
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+      color: #666;
+    }
+    
+    .chart-container {
+      width: 100%;
+      max-width: 800px;
+      height: 200px;
+      background: #0d0d0d;
+      border: 2px solid #1a1a1a;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .chart-line {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #00ff00;
+      box-shadow: 0 0 10px #00ff00;
+    }
+    
+    #chartCanvas {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .clicker-area {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .claude-btn {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #2a2a2a, #0d0d0d);
+      border: 4px solid #ff6b35;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 5rem;
+      box-shadow: 0 0 40px rgba(255, 107, 53, 0.4);
+      transition: all 0.1s ease;
+      user-select: none;
+    }
+    
+    .claude-btn:hover {
+      box-shadow: 0 0 60px rgba(255, 107, 53, 0.6);
+    }
+    
+    .claude-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 0 80px rgba(0, 255, 0, 0.6);
+      border-color: #00ff00;
+    }
+    
+    .multipliers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .upgrade-btn {
+      padding: 12px 20px;
+      background: #111;
+      border: 2px solid #333;
+      color: #888;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+    
+    .upgrade-btn:hover:not(:disabled) {
+      border-color: #ff6b35;
+      color: #fff;
+    }
+    
+    .upgrade-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .upgrade-btn.owned {
+      border-color: #00ff00;
+      color: #00ff00;
+    }
+    
+    .upgrade-cost {
+      color: #ffd700;
+      font-weight: bold;
+    }
+    
+    .milestones {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 800px;
+      margin-bottom: 20px;
+    }
+    
+    .milestone {
+      padding: 10px 20px;
+      background: #111;
+      border: 2px solid #333;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      color: #666;
+      transition: all 0.3s ease;
+    }
+    
+    .milestone.reached {
+      border-color: #00ff00;
+      color: #00ff00;
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+    
+    .floating-number {
+      position: fixed;
+      pointer-events: none;
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00;
+      animation: floatUp 1s ease-out forwards;
+      z-index: 1000;
+    }
+    
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-100px); }
+    }
+    
+    .message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.9);
+      border: 3px solid #ffd700;
+      padding: 30px 50px;
+      border-radius: 20px;
+      text-align: center;
+      z-index: 2000;
+      animation: popIn 0.3s ease;
+      display: none;
+    }
+    
+    .message.show {
+      display: block;
+    }
+    
+    @keyframes popIn {
+      0% { transform: translate(-50%, -50%) scale(0); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    
+    .message h2 {
+      color: #ffd700;
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .message p {
+      color: #888;
+    }
+    
+    .ca-box {
+      margin-top: 20px;
+      padding: 15px 30px;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid #ff6b35;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #ff6b35;
+      cursor: pointer;
+    }
+    
+    .leaderboard-hint {
+      margin-top: 15px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="game">
+    <h1>📈 $CLAUDE CLICKER 📈</h1>
+    <p class="subtitle">Click to pump the chart! How high can you go?</p>
+    
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-value" id="clicks">0</div>
+        <div class="stat-label">CLICKS</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value price" id="price">$0.000001</div>
+        <div class="stat-label">PRICE</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="mcap">$1K</div>
+        <div class="stat-label">MCAP</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="multiplier">1x</div>
+        <div class="stat-label">MULTIPLIER</div>
+      </div>
+    </div>
+    
+    <div class="chart-container">
+      <canvas id="chartCanvas"></canvas>
+    </div>
+    
+    <div class="clicker-area">
+      <div class="multipliers">
+        <button class="upgrade-btn" id="upgrade1" onclick="buyUpgrade(1)">
+          🧠 Big Brain Mode<br>
+          <span class="upgrade-cost">Cost: 100 clicks</span><br>
+          <small>+1x multiplier</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade2" onclick="buyUpgrade(2)">
+          💎 Diamond Hands<br>
+          <span class="upgrade-cost">Cost: 500 clicks</span><br>
+          <small>+2x multiplier</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade3" onclick="buyUpgrade(3)">
+          🚀 Moon Thrusters<br>
+          <span class="upgrade-cost">Cost: 2000 clicks</span><br>
+          <small>+5x multiplier</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade4" onclick="buyUpgrade(4)">
+          👑 Claude's Blessing<br>
+          <span class="upgrade-cost">Cost: 10000 clicks</span><br>
+          <small>+10x multiplier</small>
+        </button>
+      </div>
+      
+      <div class="claude-btn" id="clickBtn" onclick="handleClick(event)">
+        🧠
+      </div>
+      
+      <div class="multipliers">
+        <button class="upgrade-btn" id="upgrade5" onclick="buyUpgrade(5)">
+          ⚡ Auto-Clicker (1/s)<br>
+          <span class="upgrade-cost">Cost: 500 clicks</span><br>
+          <small>Passive gains</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade6" onclick="buyUpgrade(6)">
+          ⚡⚡ Auto-Clicker (5/s)<br>
+          <span class="upgrade-cost">Cost: 2500 clicks</span><br>
+          <small>More passive</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade7" onclick="buyUpgrade(7)">
+          ⚡⚡⚡ Auto-Clicker (20/s)<br>
+          <span class="upgrade-cost">Cost: 10000 clicks</span><br>
+          <small>Maximum passive</small>
+        </button>
+        <button class="upgrade-btn" id="upgrade8" onclick="buyUpgrade(8)">
+          🌙 MOON MODE<br>
+          <span class="upgrade-cost">Cost: 50000 clicks</span><br>
+          <small>+100x multiplier</small>
+        </button>
+      </div>
+    </div>
+    
+    <div class="milestones">
+      <div class="milestone" id="m1" data-target="100">📊 100 clicks</div>
+      <div class="milestone" id="m2" data-target="1000">📈 1K clicks</div>
+      <div class="milestone" id="m3" data-target="10000">🔥 10K clicks</div>
+      <div class="milestone" id="m4" data-target="100000">💎 100K clicks</div>
+      <div class="milestone" id="m5" data-target="1000000">🚀 1M clicks</div>
+      <div class="milestone" id="m6" data-target="10000000">🌙 10M clicks</div>
+      <div class="milestone" id="m7" data-target="100000000">👑 100M MOON</div>
+    </div>
+    
+    <div class="ca-box" onclick="copyCA()">
+      📋 Real CA: DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump
+    </div>
+    
+    <p class="leaderboard-hint">Screenshot your score & share on X with #CLAUDECLICKER 🏆</p>
+  </div>
+  
+  <div class="message" id="message">
+    <h2 id="msgTitle">🎉 MILESTONE!</h2>
+    <p id="msgText">You reached a new milestone!</p>
+  </div>
+  
+  <script>
+    let clicks = 0;
+    let multiplier = 1;
+    let autoClickRate = 0;
+    let chartData = [10];
+    
+    const upgrades = {
+      1: { cost: 100, mult: 1, owned: false },
+      2: { cost: 500, mult: 2, owned: false },
+      3: { cost: 2000, mult: 5, owned: false },
+      4: { cost: 10000, mult: 10, owned: false },
+      5: { cost: 500, auto: 1, owned: false },
+      6: { cost: 2500, auto: 5, owned: false },
+      7: { cost: 10000, auto: 20, owned: false },
+      8: { cost: 50000, mult: 100, owned: false }
+    };
+    
+    const milestoneMessages = {
+      100: "🧠 Big brain energy detected!",
+      1000: "📈 You're pumping! Keep going!",
+      10000: "🔥 On fire! The chart is looking bullish!",
+      100000: "💎 Diamond hands confirmed! True believer!",
+      1000000: "🚀 MOON MISSION INITIATED!",
+      10000000: "🌙 YOU REACHED THE MOON!",
+      100000000: "👑 $100M MCAP! PROPHECY FULFILLED!"
+    };
+    
+    const canvas = document.getElementById('chartCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      ctx.scale(2, 2);
+    }
+    resizeCanvas();
+    
+    function handleClick(event) {
+      const gain = multiplier;
+      clicks += gain;
+      updateDisplay();
+      createFloatingNumber(event.clientX, event.clientY, '+' + gain);
+      addChartPoint();
+      checkMilestones();
+    }
+    
+    function createFloatingNumber(x, y, text) {
+      const el = document.createElement('div');
+      el.className = 'floating-number';
+      el.textContent = text;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 1000);
+    }
+    
+    function updateDisplay() {
+      document.getElementById('clicks').textContent = formatNumber(clicks);
+      document.getElementById('multiplier').textContent = multiplier + 'x';
+      
+      const price = 0.000001 * (1 + clicks / 1000);
+      document.getElementById('price').textContent = '$' + price.toFixed(6);
+      
+      const mcap = 1000 * (1 + clicks / 100);
+      document.getElementById('mcap').textContent = '$' + formatMcap(mcap);
+      
+      updateUpgradeButtons();
+    }
+    
+    function formatNumber(n) {
+      if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toString();
+    }
+    
+    function formatMcap(n) {
+      if (n >= 1000000000) return (n / 1000000000).toFixed(1) + 'B';
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return n.toFixed(0);
+    }
+    
+    function addChartPoint() {
+      chartData.push(10 + clicks / 100);
+      if (chartData.length > 100) chartData.shift();
+      drawChart();
+    }
+    
+    function drawChart() {
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
+      
+      ctx.clearRect(0, 0, w, h);
+      
+      // Grid
+      ctx.strokeStyle = '#1a1a1a';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, (h / 5) * i);
+        ctx.lineTo(w, (h / 5) * i);
+        ctx.stroke();
+      }
+      
+      // Line
+      const max = Math.max(...chartData) * 1.2;
+      ctx.strokeStyle = '#00ff00';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#00ff00';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      
+      chartData.forEach((val, i) => {
+        const x = (i / (chartData.length - 1)) * w;
+        const y = h - (val / max) * (h - 20) - 10;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Fill under
+      ctx.lineTo(w, h);
+      ctx.lineTo(0, h);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+      ctx.fill();
+    }
+    
+    function buyUpgrade(id) {
+      const upgrade = upgrades[id];
+      if (upgrade.owned || clicks < upgrade.cost) return;
+      
+      clicks -= upgrade.cost;
+      upgrade.owned = true;
+      
+      if (upgrade.mult) multiplier += upgrade.mult;
+      if (upgrade.auto) autoClickRate += upgrade.auto;
+      
+      document.getElementById('upgrade' + id).classList.add('owned');
+      updateDisplay();
+    }
+    
+    function updateUpgradeButtons() {
+      for (let id in upgrades) {
+        const btn = document.getElementById('upgrade' + id);
+        const upgrade = upgrades[id];
+        if (upgrade.owned) {
+          btn.disabled = true;
+        } else {
+          btn.disabled = clicks < upgrade.cost;
+        }
+      }
+    }
+    
+    function checkMilestones() {
+      const milestones = document.querySelectorAll('.milestone');
+      milestones.forEach(m => {
+        const target = parseInt(m.dataset.target);
+        if (clicks >= target && !m.classList.contains('reached')) {
+          m.classList.add('reached');
+          showMessage(milestoneMessages[target] || 'Milestone reached!');
+        }
+      });
+    }
+    
+    function showMessage(text) {
+      const msg = document.getElementById('message');
+      document.getElementById('msgText').textContent = text;
+      msg.classList.add('show');
+      setTimeout(() => msg.classList.remove('show'), 2000);
+    }
+    
+    function copyCA() {
+      navigator.clipboard.writeText('DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump');
+      alert('CA Copied! Now pump the REAL chart! 🚀');
+    }
+    
+    // Auto clicker
+    setInterval(() => {
+      if (autoClickRate > 0) {
+        clicks += autoClickRate * multiplier;
+        addChartPoint();
+        updateDisplay();
+        checkMilestones();
+      }
+    }, 1000);
+    
+    // Initial draw
+    drawChart();
+    updateDisplay();
+  </script>
+</body>
+</html>

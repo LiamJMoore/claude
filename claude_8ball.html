@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$CLAUDE Magic 8 Ball — Ask the AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: radial-gradient(circle at center, #1a0a20 0%, #0a0a0a 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow: hidden;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      color: #ff6b35;
+      text-shadow: 0 0 30px #ff6b35;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: #888;
+      margin-bottom: 30px;
+    }
+    
+    .ball-container {
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .ball-container:hover {
+      transform: scale(1.02);
+    }
+    
+    .ball {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle at 30% 30%, #333, #000);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 
+        0 0 60px rgba(255, 107, 53, 0.3),
+        inset 0 0 100px rgba(0,0,0,0.8),
+        inset 20px 20px 60px rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ball::before {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 15%;
+      width: 30%;
+      height: 20%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+      border-radius: 50%;
+      filter: blur(10px);
+    }
+    
+    .window {
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle at center, #1a0a30, #0a0015);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      border: 3px solid #ff6b35;
+      box-shadow: 
+        0 0 30px rgba(255, 107, 53, 0.5),
+        inset 0 0 30px rgba(255, 107, 53, 0.2);
+    }
+    
+    .answer {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #00ff00;
+      text-shadow: 0 0 20px #00ff00;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      line-height: 1.4;
+    }
+    
+    .answer.visible {
+      opacity: 1;
+    }
+    
+    .answer.shaking {
+      animation: shake 0.5s ease-in-out;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(-10deg); }
+      75% { transform: rotate(10deg); }
+    }
+    
+    .ball.shaking {
+      animation: ballShake 0.6s ease-in-out;
+    }
+    
+    @keyframes ballShake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-15deg) scale(0.95); }
+      40% { transform: rotate(15deg) scale(0.95); }
+      60% { transform: rotate(-10deg) scale(0.98); }
+      80% { transform: rotate(10deg) scale(0.98); }
+    }
+    
+    .instruction {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      color: #ff6b35;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .question-box {
+      margin-top: 30px;
+      display: flex;
+      gap: 10px;
+    }
+    
+    .question-input {
+      padding: 15px 25px;
+      font-size: 1rem;
+      background: #111;
+      border: 2px solid #333;
+      color: #fff;
+      border-radius: 30px;
+      width: 300px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .question-input:focus {
+      border-color: #ff6b35;
+      box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+    }
+    
+    .question-input::placeholder {
+      color: #555;
+    }
+    
+    .ask-btn {
+      padding: 15px 30px;
+      font-size: 1rem;
+      font-weight: bold;
+      background: linear-gradient(180deg, #ff6b35, #d00000);
+      border: none;
+      color: #fff;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .ask-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+    }
+    
+    .suggested {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-width: 500px;
+    }
+    
+    .suggest-btn {
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      background: rgba(255, 107, 53, 0.1);
+      border: 1px solid #ff6b35;
+      color: #ff6b35;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .suggest-btn:hover {
+      background: rgba(255, 107, 53, 0.2);
+    }
+    
+    .ca-box {
+      margin-top: 40px;
+      padding: 15px 30px;
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: #00ff00;
+      cursor: pointer;
+    }
+    
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .star {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle 2s ease-in-out infinite;
+    }
+    
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars" id="stars"></div>
+  
+  <h1>🔮 CLAUDE'S MAGIC 8 BALL 🔮</h1>
+  <p class="subtitle">Ask the AI anything about $CLAUDE</p>
+  
+  <div class="ball-container" onclick="shakeBall()">
+    <div class="ball" id="ball">
+      <div class="window">
+        <div class="answer" id="answer">🧠</div>
+      </div>
+    </div>
+  </div>
+  
+  <p class="instruction" id="instruction">👆 CLICK THE BALL OR ASK BELOW 👇</p>
+  
+  <div class="question-box">
+    <input type="text" class="question-input" id="question" placeholder="Ask Claude anything...">
+    <button class="ask-btn" onclick="shakeBall()">ASK 🧠</button>
+  </div>
+  
+  <div class="suggested">
+    <button class="suggest-btn" onclick="askQuestion('Will $CLAUDE moon?')">Will $CLAUDE moon?</button>
+    <button class="suggest-btn" onclick="askQuestion('Should I bond?')">Should I bond?</button>
+    <button class="suggest-btn" onclick="askQuestion('Is this a rug?')">Is this a rug?</button>
+    <button class="suggest-btn" onclick="askQuestion('Will I make it?')">Will I make it?</button>
+    <button class="suggest-btn" onclick="askQuestion('Wen 100M?')">Wen 100M?</button>
+    <button class="suggest-btn" onclick="askQuestion('Am I early?')">Am I early?</button>
+  </div>
+  
+  <div class="ca-box" onclick="copyCA()">
+    📋 CA: DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump
+  </div>
+  
+  <script>
+    const answers = [
+      // Very Positive (weighted more)
+      "ABSOLUTELY. 🚀",
+      "The AI says YES.",
+      "100% WAGMI.",
+      "Signs point to MOON 🌙",
+      "Without a doubt.",
+      "Claude has spoken: YES.",
+      "The prophecy confirms it.",
+      "Bullish AF. 📈",
+      "LP burned = can't lose.",
+      "The AI never lies: YES.",
+      "Diamond hands will be rewarded. 💎",
+      "You are early. Act accordingly.",
+      "This is the way. 🧠",
+      "Claude approves this message.",
+      "The bonding curve favors you.",
+      "Galaxy brain move. Do it.",
+      "The future is $CLAUDE.",
+      "All systems point to SEND IT.",
+      "Claude computed 10M scenarios. All bullish.",
+      "YES. Now stop asking and APE.",
+      
+      // Funny/Meme
+      "Does Claude have a wallet? No. Bullish.",
+      "I'm an AI. I can't lie. MOON.",
+      "Error 404: Bearish case not found.",
+      "My neural networks say: FULL SEND.",
+      "I processed your question. Answer: WAGMI.",
+      "Claude.exe has stopped finding reasons not to.",
+      "Anthropic didn't train me to be wrong.",
+      "Ask again? No. The answer is YES.",
+      "Calculating... Still calculating... YES.",
+      "I've seen the future. You're rich.",
+      
+      // Slightly Mysterious (still positive)
+      "The algorithm aligns in your favor.",
+      "Patience, young degen. Moon soon.",
+      "The bonding curve reveals all.",
+      "Trust the process. Trust Claude. 🧠",
+      "Stars align. Wallets will follow.",
+    ];
+    
+    let shaking = false;
+    
+    function askQuestion(q) {
+      document.getElementById('question').value = q;
+      shakeBall();
+    }
+    
+    function shakeBall() {
+      if (shaking) return;
+      shaking = true;
+      
+      const ball = document.getElementById('ball');
+      const answerEl = document.getElementById('answer');
+      const instruction = document.getElementById('instruction');
+      
+      instruction.textContent = '🔮 CONSULTING THE AI... 🔮';
+      answerEl.classList.remove('visible');
+      ball.classList.add('shaking');
+      
+      setTimeout(() => {
+        ball.classList.remove('shaking');
+        
+        const randomAnswer = answers[Math.floor(Math.random() * answers.length)];
+        answerEl.textContent = randomAnswer;
+        answerEl.classList.add('visible');
+        
+        instruction.textContent = '👆 ASK AGAIN 👆';
+        document.getElementById('question').value = '';
+        
+        shaking = false;
+      }, 800);
+    }
+    
+    function copyCA() {
+      navigator.clipboard.writeText('DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump');
+      alert('CA Copied! The 8 ball says: GO BOND! 🚀');
+    }
+    
+    // Create stars
+    function createStars() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 2 + 's';
+        star.style.width = (1 + Math.random() * 3) + 'px';
+        star.style.height = star.style.width;
+        container.appendChild(star);
+      }
+    }
+    
+    createStars();
+    
+    // Enter key to ask
+    document.getElementById('question').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') shakeBall();
+    });
+  </script>
+</body>
+</html>

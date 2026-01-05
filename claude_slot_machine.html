@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>$CLAUDE Casino — Spin to Win</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a0a00 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      overflow: hidden;
+    }
+    
+    .casino {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    h1 {
+      font-size: 3rem;
+      color: #ff6b35;
+      text-shadow: 0 0 30px #ff6b35;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: #888;
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+    }
+    
+    .slot-machine {
+      background: linear-gradient(180deg, #1a1a1a, #0d0d0d);
+      border: 4px solid #ff6b35;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 0 50px rgba(255, 107, 53, 0.3), inset 0 0 50px rgba(0,0,0,0.5);
+    }
+    
+    .slots {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    
+    .slot {
+      width: 100px;
+      height: 120px;
+      background: #000;
+      border: 3px solid #333;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      overflow: hidden;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    }
+    
+    .slot.spinning {
+      animation: slotSpin 0.1s linear infinite;
+    }
+    
+    @keyframes slotSpin {
+      0% { transform: translateY(-10px); }
+      50% { transform: translateY(10px); }
+      100% { transform: translateY(-10px); }
+    }
+    
+    .slot.winner {
+      border-color: #00ff00;
+      box-shadow: 0 0 30px #00ff00, inset 0 0 20px rgba(0,255,0,0.2);
+      animation: winPulse 0.5s ease-in-out infinite;
+    }
+    
+    @keyframes winPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .spin-btn {
+      background: linear-gradient(180deg, #ff6b35, #d00000);
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      font-weight: bold;
+      padding: 20px 60px;
+      border-radius: 50px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      box-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .spin-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 50px rgba(255, 107, 53, 0.8);
+    }
+    
+    .spin-btn:disabled {
+      background: #333;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    .result {
+      margin-top: 30px;
+      font-size: 1.5rem;
+      min-height: 80px;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    
+    .result.win {
+      background: rgba(0, 255, 0, 0.1);
+      border: 2px solid #00ff00;
+      color: #00ff00;
+      text-shadow: 0 0 20px #00ff00;
+      animation: resultPop 0.5s ease;
+    }
+    
+    .result.lose {
+      background: rgba(255, 68, 68, 0.1);
+      border: 2px solid #ff4444;
+      color: #ff4444;
+    }
+    
+    .result.jackpot {
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      text-shadow: 0 0 30px #ffd700;
+      animation: jackpot 0.3s ease infinite;
+    }
+    
+    @keyframes jackpot {
+      0%, 100% { transform: scale(1) rotate(-1deg); }
+      50% { transform: scale(1.02) rotate(1deg); }
+    }
+    
+    @keyframes resultPop {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      color: #ff6b35;
+      font-weight: bold;
+    }
+    
+    .stat-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    
+    .ca-box {
+      margin-top: 40px;
+      padding: 15px 30px;
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid #00ff00;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #00ff00;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .ca-box:hover {
+      background: rgba(0, 255, 0, 0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    }
+    
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+    
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      top: -20px;
+      animation: confettiFall 3s linear forwards;
+    }
+    
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+    
+    .legend {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+    
+    .legend-title {
+      color: #ff6b35;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="casino">
+    <h1>🎰 $CLAUDE CASINO 🎰</h1>
+    <p class="subtitle">Spin to see your destiny (NFA)</p>
+    
+    <div class="slot-machine">
+      <div class="slots">
+        <div class="slot" id="slot1">🧠</div>
+        <div class="slot" id="slot2">🧠</div>
+        <div class="slot" id="slot3">🧠</div>
+      </div>
+      
+      <button class="spin-btn" id="spinBtn" onclick="spin()">🎲 SPIN 🎲</button>
+      
+      <div class="result" id="result"></div>
+      
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value" id="spins">0</div>
+          <div class="stat-label">SPINS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="wins">0</div>
+          <div class="stat-label">WINS</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="jackpots">0</div>
+          <div class="stat-label">JACKPOTS</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-title">🎰 WINNING COMBOS</div>
+      🧠🧠🧠 = JACKPOT (100x your belief) | 
+      🚀🚀🚀 = MOON MISSION | 
+      💎💎💎 = DIAMOND HANDS | 
+      Any 3 match = WIN
+    </div>
+    
+    <div class="ca-box" onclick="copyCA()">
+      📋 CA: DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump (click to copy)
+    </div>
+  </div>
+  
+  <div class="confetti" id="confetti"></div>
+  
+  <script>
+    const symbols = ['🧠', '🚀', '💎', '💰', '🔥', '👑', '⚡', '🌙'];
+    const jackpotSymbol = '🧠';
+    
+    const results = {
+      jackpot: [
+        "🚨 JACKPOT! 🚨 You're gonna make it! $CLAUDE to $100M!",
+        "🧠🧠🧠 GALAXY BRAIN ACTIVATED! Max hopium achieved!",
+        "CLAUDE HAS CHOSEN YOU! Diamond hands destiny unlocked!",
+        "🎉 LEGENDARY! The AI blesses your bags!"
+      ],
+      win: [
+        "WINNER! The AI approves of your vibes 🔥",
+        "You're winning! Just like $CLAUDE holders 📈",
+        "Nice spin! Your bags are safe with Claude 💎",
+        "The prophecy favors you today! 🧠",
+        "WAGMI energy detected! Keep holding! 🚀"
+      ],
+      lose: [
+        "Not this time... but $CLAUDE never loses 🧠",
+        "Try again! Paper hands don't win here 📄",
+        "The AI suggests: maybe buy more $CLAUDE? 🤔",
+        "Unlucky spin, but the bonding curve waits for no one!",
+        "F. But real ones keep spinning (and buying) 💪"
+      ]
+    };
+    
+    let spinning = false;
+    let totalSpins = 0;
+    let totalWins = 0;
+    let totalJackpots = 0;
+    
+    function spin() {
+      if (spinning) return;
+      spinning = true;
+      
+      const btn = document.getElementById('spinBtn');
+      const slots = [
+        document.getElementById('slot1'),
+        document.getElementById('slot2'),
+        document.getElementById('slot3')
+      ];
+      const resultDiv = document.getElementById('result');
+      
+      btn.disabled = true;
+      resultDiv.className = 'result';
+      resultDiv.textContent = 'Spinning...';
+      
+      slots.forEach(slot => {
+        slot.classList.add('spinning');
+        slot.classList.remove('winner');
+      });
+      
+      // Spin each slot with delay
+      const finalSymbols = [];
+      
+      slots.forEach((slot, index) => {
+        let spinCount = 0;
+        const maxSpins = 10 + (index * 5);
+        
+        const spinInterval = setInterval(() => {
+          slot.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          spinCount++;
+          
+          if (spinCount >= maxSpins) {
+            clearInterval(spinInterval);
+            const finalSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            slot.textContent = finalSymbol;
+            finalSymbols.push(finalSymbol);
+            slot.classList.remove('spinning');
+            
+            if (finalSymbols.length === 3) {
+              checkResult(finalSymbols, slots, resultDiv, btn);
+            }
+          }
+        }, 80);
+      });
+    }
+    
+    function checkResult(finalSymbols, slots, resultDiv, btn) {
+      totalSpins++;
+      document.getElementById('spins').textContent = totalSpins;
+      
+      const allMatch = finalSymbols[0] === finalSymbols[1] && finalSymbols[1] === finalSymbols[2];
+      const isJackpot = allMatch && finalSymbols[0] === jackpotSymbol;
+      
+      setTimeout(() => {
+        if (isJackpot) {
+          // JACKPOT
+          totalJackpots++;
+          totalWins++;
+          document.getElementById('jackpots').textContent = totalJackpots;
+          document.getElementById('wins').textContent = totalWins;
+          
+          slots.forEach(s => s.classList.add('winner'));
+          resultDiv.className = 'result jackpot';
+          resultDiv.textContent = results.jackpot[Math.floor(Math.random() * results.jackpot.length)];
+          createConfetti(100);
+        } else if (allMatch) {
+          // Regular win
+          totalWins++;
+          document.getElementById('wins').textContent = totalWins;
+          
+          slots.forEach(s => s.classList.add('winner'));
+          resultDiv.className = 'result win';
+          resultDiv.textContent = results.win[Math.floor(Math.random() * results.win.length)];
+          createConfetti(30);
+        } else {
+          // Lose
+          resultDiv.className = 'result lose';
+          resultDiv.textContent = results.lose[Math.floor(Math.random() * results.lose.length)];
+        }
+        
+        btn.disabled = false;
+        spinning = false;
+      }, 300);
+    }
+    
+    function createConfetti(count) {
+      const container = document.getElementById('confetti');
+      const colors = ['#ff6b35', '#00ff00', '#ffd700', '#ff00ff', '#00ffff'];
+      
+      for (let i = 0; i < count; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+        container.appendChild(piece);
+        
+        setTimeout(() => piece.remove(), 4000);
+      }
+    }
+    
+    function copyCA() {
+      navigator.clipboard.writeText('DQpq9AHcZDoVgFFUcvs5qH35VwKrGzdixd7sSUubpump');
+      alert('CA Copied! Now go bond! 🚀');
+    }
+  </script>
+</body>
+</html>
